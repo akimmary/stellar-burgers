@@ -9,7 +9,7 @@ export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
     const location = useLocation();
 
     const handleAdd = () => {};
-
+    console.log('INGREDIENT CARD:', ingredient.name);
     return (
       <BurgerIngredientUI
         ingredient={ingredient}
