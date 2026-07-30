@@ -6,7 +6,8 @@ import {
   getUserApi,
   updateUserApi,
   TRegisterData,
-  registerUserApi
+  registerUserApi,
+  logoutApi
 } from '../utils/burger-api';
 import { setCookie } from '../utils/cookie';
 
@@ -60,6 +61,15 @@ export const registerUser = createAsyncThunk(
     return response.user;
   }
 );
+
+export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
+  await logoutApi();
+
+  localStorage.removeItem('refreshToken');
+  document.cookie = 'accessToken=; Max-Age=0; path=/';
+
+  return null;
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -120,6 +130,10 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message ?? 'Ошибка регистрации';
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthChecked = true;
       });
   }
 });

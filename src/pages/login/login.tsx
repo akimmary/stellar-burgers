@@ -2,9 +2,11 @@ import { FC, SyntheticEvent, useState } from 'react';
 import { LoginUI } from '@ui-pages';
 import { useDispatch, useSelector } from '../../services/store';
 import { loginUser } from '../../services/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 export const Login: FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const error = useSelector((state) => state.auth.error);
 
@@ -20,7 +22,9 @@ export const Login: FC = () => {
         email,
         password
       })
-    );
+    ).then(() => {
+      navigate('/');
+    });
   };
 
   return (
