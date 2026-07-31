@@ -4,14 +4,16 @@ import { BurgerConstructorUI } from '@ui';
 import { useSelector, useDispatch } from '../../services/store';
 import { orderBurger, clearOrder } from '../../services/orderSlice';
 import { clearConstructor } from '../../services/constructorSlice';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
   const constructorItems = useSelector((state) => state.burgerConstructor);
   const dispatch = useDispatch();
 
   const orderRequest = useSelector((state) => state.order.orderRequest);
-
+  const user = useSelector((state) => state.auth.user);
   const orderModalData = useSelector((state) => state.order.orderModalData);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (orderModalData) {
@@ -20,6 +22,11 @@ export const BurgerConstructor: FC = () => {
   }, [orderModalData, dispatch]);
 
   const onOrderClick = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     if (!constructorItems.bun || orderRequest) return;
 
     const ingredients = [
