@@ -14,11 +14,11 @@ export const Profile: FC = () => {
   });
 
   useEffect(() => {
-    setFormValue((prevState) => ({
-      ...prevState,
+    setFormValue({
       name: user?.name || '',
-      email: user?.email || ''
-    }));
+      email: user?.email || '',
+      password: ''
+    });
   }, [user]);
 
   if (!user) {
@@ -32,11 +32,12 @@ export const Profile: FC = () => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
+
     dispatch(
       updateUser({
         name: formValue.name,
         email: formValue.email,
-        password: formValue.password
+        ...(formValue.password && { password: formValue.password })
       })
     );
   };
@@ -66,6 +67,4 @@ export const Profile: FC = () => {
       handleInputChange={handleInputChange}
     />
   );
-
-  return null;
 };

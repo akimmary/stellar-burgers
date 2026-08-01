@@ -7,7 +7,8 @@ import {
 import { TOrder, TOrdersData } from '../utils/types';
 
 type TOrdersState = {
-  orders: TOrder[];
+  feedOrders: TOrder[];
+  userOrders: TOrder[];
   currentOrder: TOrder | null;
   total: number;
   totalToday: number;
@@ -16,7 +17,8 @@ type TOrdersState = {
 };
 
 const initialState: TOrdersState = {
-  orders: [],
+  feedOrders: [],
+  userOrders: [],
   currentOrder: null,
   total: 0,
   totalToday: 0,
@@ -34,7 +36,7 @@ export const getUserOrders = createAsyncThunk<TOrder[]>(
   async () => getOrdersApi()
 );
 
-export const getOrderByNumber = createAsyncThunk(
+export const getOrderByNumber = createAsyncThunk<TOrder, number>(
   'orders/getOrderByNumber',
   async (number: number) => {
     const data = await getOrderByNumberApi(number);
@@ -55,7 +57,7 @@ const ordersSlice = createSlice({
       })
       .addCase(getFeeds.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orders = action.payload.orders;
+        state.feedOrders = action.payload.orders;
         state.total = action.payload.total;
         state.totalToday = action.payload.totalToday;
       })
@@ -70,7 +72,7 @@ const ordersSlice = createSlice({
       })
       .addCase(getUserOrders.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orders = action.payload;
+        state.userOrders = action.payload;
       })
       .addCase(getUserOrders.rejected, (state, action) => {
         state.isLoading = false;

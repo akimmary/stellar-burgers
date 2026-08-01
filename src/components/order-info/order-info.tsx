@@ -63,7 +63,12 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (
+    !orderData ||
+    orderData.number !== Number(number) ||
+    !ingredients.length ||
+    !orderInfo
+  ) {
     return <Preloader />;
   }
 
