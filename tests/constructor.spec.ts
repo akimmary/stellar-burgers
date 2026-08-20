@@ -1,183 +1,293 @@
 import { test, expect } from '@playwright/test';
 
-test('добавляет ингредиент в конструктор', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
+test.describe('Добавление ингредиентов', () => {
+  test('добавляет ингредиент в конструктор', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
 
-  const ingredient = page.getByText('Краторная булка N-200i');
+    await page.goto('/');
 
-  await expect(ingredient).toBeVisible();
+    const card = page.locator('li').filter({
+      hasText: 'Краторная булка N-200i'
+    });
 
-  const card = ingredient.locator('..').locator('..');
-  const addButton = card.getByRole('button', { name: 'Добавить' });
+    await expect(card).toBeVisible();
 
-  await addButton.click();
-  // ингредиент добавлен сверху
-  await expect(page.getByText('Краторная булка N-200i (верх)')).toBeVisible();
-  // ингредиент добавлен снизу
-  await expect(page.getByText('Краторная булка N-200i (низ)')).toBeVisible();
-});
+    const addButton = card.getByRole('button', {
+      name: 'Добавить'
+    });
 
-test('добавляет начинку в конструктор', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
+    await addButton.click();
 
-  const ingredient = page.getByText('Биокотлета из марсианской Магнолии');
-  const card = ingredient.locator('..').locator('..');
-  const addButton = card.getByRole('button', { name: 'Добавить' });
-
-  await addButton.click();
-  // начинка добавлена
-  await expect(
-    page.locator('span').filter({
-      hasText: /^Биокотлета из марсианской Магнолии$/
-    })
-  ).toBeVisible();
-});
-
-test('добавляет соус в конструктор', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
-
-  const ingredient = page.getByText('Соус Spicy-X');
-  const card = ingredient.locator('..').locator('..');
-  const addButton = card.getByRole('button', { name: 'Добавить' });
-
-  await addButton.click();
-  // соус добавлен
-  await expect(
-    page.locator('span').filter({
-      hasText: /^Соус Spicy-X$/
-    })
-  ).toBeVisible();
-});
-
-test('неавторизованный пользователь перенаправляется на страницу входа', async ({
-  page
-}) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
-
-  const orderButton = page.getByRole('button', {
-    name: 'Оформить заказ'
-  });
-
-  await orderButton.click();
-  // пользователь перенаправлен на страницу входа
-  await expect(page).toHaveURL(/\/login/);
-});
-
-test('авторизованный пользователь может оформить заказ', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-
-  await page.route('**/api/auth/user', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        success: true,
-        user: {
-          email: 'test@test.ru',
-          name: 'Test'
-        }
+    const constructor = page.locator('section').filter({
+      has: page.getByRole('button', {
+        name: 'Оформить заказ'
       })
     });
+
+    // ингредиент добавлен сверху
+    await expect(
+      constructor.getByText('Краторная булка N-200i (верх)')
+    ).toBeVisible();
+
+    // ингредиент добавлен снизу
+    await expect(
+      constructor.getByText('Краторная булка N-200i (низ)')
+    ).toBeVisible();
   });
 
-  await page.route('**/api/orders', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        success: true,
-        name: 'test burger',
-        order: {
-          number: 12345
-        }
+  test('добавляет начинку в конструктор', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
+
+    await page.goto('/');
+
+    const card = page.locator('li').filter({
+      hasText: 'Биокотлета из марсианской Магнолии'
+    });
+
+    await expect(card).toBeVisible();
+
+    await card
+      .getByRole('button', {
+        name: 'Добавить'
+      })
+      .click();
+
+    const constructor = page.locator('section').filter({
+      has: page.getByRole('button', {
+        name: 'Оформить заказ'
       })
     });
+
+    await expect(
+      constructor.getByText('Биокотлета из марсианской Магнолии', {
+        exact: true
+      })
+    ).toBeVisible();
   });
 
-  await page.goto('/');
+  test('добавляет соус в конструктор', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
 
-  const ingredient = page.getByText('Краторная булка N-200i');
+    await page.goto('/');
 
-  const card = ingredient.locator('..').locator('..');
+    const card = page.locator('li').filter({
+      hasText: 'Соус Spicy-X'
+    });
 
-  const addButton = card.getByRole('button', { name: 'Добавить' });
+    await expect(card).toBeVisible();
 
-  await addButton.click();
+    await card
+      .getByRole('button', {
+        name: 'Добавить'
+      })
+      .click();
 
-  const orderButton = page.getByRole('button', {
-    name: 'Оформить заказ'
+    const constructor = page.locator('section').filter({
+      has: page.getByRole('button', {
+        name: 'Оформить заказ'
+      })
+    });
+
+    await expect(
+      constructor.getByText('Соус Spicy-X', {
+        exact: true
+      })
+    ).toBeVisible();
+  });
+});
+
+test.describe('Оформление заказа', () => {
+  test('неавторизованный пользователь перенаправляется на страницу входа', async ({
+    page
+  }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
+
+    await page.goto('/');
+
+    const orderButton = page.getByRole('button', {
+      name: 'Оформить заказ'
+    });
+
+    await orderButton.click();
+
+    await expect(page).toHaveURL(/login/);
   });
 
-  await orderButton.click();
+  test('авторизованный пользователь может оформить заказ', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/order.har');
 
-  // заказ создан
-  await expect(page.getByText('12345')).toBeVisible();
+    await page.context().addCookies([
+      {
+        name: 'accessToken',
+        value: 'fake-access-token',
+        domain: 'localhost',
+        path: '/'
+      }
+    ]);
 
-  // конструктор очистился
-  await expect(page.getByText('Выберите булки')).toHaveCount(2);
+    await page.addInitScript(() => {
+      localStorage.setItem('refreshToken', 'fake-refresh-token');
+    });
 
-  // закрываем модалку
-  const closeButton = page.locator('#modals button');
-  await closeButton.click();
+    await page.goto('/');
 
-  // модалка закрылась
-  await expect(page.getByText('12345')).not.toBeVisible();
+    // Добавляем булку
+    const bunCard = page.locator('li').filter({
+      hasText: 'Краторная булка N-200i'
+    });
+
+    await bunCard
+      .getByRole('button', {
+        name: 'Добавить'
+      })
+      .click();
+
+    // Добавляем начинку
+    const fillingCard = page.locator('li').filter({
+      hasText: 'Биокотлета из марсианской Магнолии'
+    });
+
+    await fillingCard
+      .getByRole('button', {
+        name: 'Добавить'
+      })
+      .click();
+
+    // Добавляем соус
+    const sauceCard = page.locator('li').filter({
+      hasText: 'Соус Spicy-X'
+    });
+
+    await sauceCard
+      .getByRole('button', {
+        name: 'Добавить'
+      })
+      .click();
+
+    const orderButton = page.getByRole('button', {
+      name: 'Оформить заказ'
+    });
+
+    await orderButton.click();
+
+    // Заказ создан
+    const orderModal = page.locator('#modals');
+
+    await expect(
+      orderModal.getByText('12345', {
+        exact: true
+      })
+    ).toBeVisible();
+
+    // Конструктор очистился
+    const constructor = page.locator('section').filter({
+      has: page.getByRole('button', {
+        name: 'Оформить заказ'
+      })
+    });
+
+    await expect(constructor.getByText('Выберите булки')).toHaveCount(2);
+
+    // Закрываем модалку
+    const closeButton = orderModal.getByRole('button');
+
+    await closeButton.click();
+
+    // Модалка закрылась
+    await expect(
+      orderModal.getByText('12345', {
+        exact: true
+      })
+    ).not.toBeVisible();
+  });
 });
 
-test('открывает модальное окно ингредиента', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
+test.describe('Модальные окна', () => {
+  test('открывает модальное окно ингредиента', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
 
-  const ingredient = page.getByText('Краторная булка N-200i');
+    await page.goto('/');
 
-  await ingredient.click();
-   // модалка открылась
-  await expect(
-    page.locator('#modals').getByText('Калории, ккал')
-  ).toBeVisible();
-});
+    const ingredient = page.getByText('Краторная булка N-200i', {
+      exact: true
+    });
 
-test('закрывает модальное окно ингредиента по крестику', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
+    await ingredient.click();
 
-  const ingredient = page.getByText('Краторная булка N-200i');
+    const modal = page.locator('#modals');
 
-  await ingredient.click();
-  // модалка открылась
-  await expect(
-    page.locator('#modals').getByText('Калории, ккал')
-  ).toBeVisible();
+    // Проверяем, что открылась модалка именно выбранного ингредиента
+    await expect(
+      modal.getByText('Краторная булка N-200i', {
+        exact: true
+      })
+    ).toBeVisible();
+  });
 
-  const closeButton = page.locator('#modals button');
-  await expect(closeButton).toBeVisible();
-  await closeButton.click();
-  // модалка закрылась по клику по кнопке
-  await expect(
-    page.locator('#modals').getByText('Калории, ккал')
-  ).not.toBeVisible();
-});
+  test('закрывает модальное окно ингредиента по крестику', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
 
-test('закрывает модальное окно ингредиента по оверлею', async ({ page }) => {
-  await page.routeFromHAR('tests/hars/ingredients.har');
-  await page.goto('/');
+    await page.goto('/');
 
-  const ingredient = page.getByText('Краторная булка N-200i');
+    const ingredient = page.getByText('Краторная булка N-200i', {
+      exact: true
+    });
 
-  await ingredient.click();
-  // модалка открылась
-  await expect(
-    page.locator('#modals').getByText('Калории, ккал')
-  ).toBeVisible();
-  const overlay = page.locator('#modals > div').last();
+    await ingredient.click();
 
-  await overlay.click({ position: { x: 5, y: 5 } });
-  // модалка закрылась по клику по оверлею
-  await expect(
-    page.locator('#modals').getByText('Калории, ккал')
-  ).not.toBeVisible();
+    const modal = page.locator('#modals');
+
+    await expect(
+      modal.getByText('Краторная булка N-200i', {
+        exact: true
+      })
+    ).toBeVisible();
+
+    const closeButton = modal.getByRole('button');
+
+    await expect(closeButton).toBeVisible();
+
+    await closeButton.click();
+
+    await expect(
+      modal.getByText('Краторная булка N-200i', {
+        exact: true
+      })
+    ).not.toBeVisible();
+  });
+
+  test('закрывает модальное окно ингредиента по оверлею', async ({ page }) => {
+    await page.routeFromHAR('tests/hars/ingredients.har');
+
+    await page.goto('/');
+
+    const ingredient = page.getByText('Краторная булка N-200i', {
+      exact: true
+    });
+
+    await ingredient.click();
+
+    const modal = page.locator('#modals');
+
+    await expect(
+      modal.getByText('Краторная булка N-200i', {
+        exact: true
+      })
+    ).toBeVisible();
+
+    const overlay = modal.locator('> div').last();
+
+    await overlay.click({
+      position: {
+        x: 5,
+        y: 5
+      }
+    });
+
+    await expect(
+      modal.getByText('Краторная булка N-200i', {
+        exact: true
+      })
+    ).not.toBeVisible();
+  });
 });
