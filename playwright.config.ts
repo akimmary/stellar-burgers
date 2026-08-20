@@ -4,12 +4,7 @@ export default defineConfig({
   testDir: './tests',
 
   use: {
-    baseURL: 'http://localhost:4000',
-    contextOptions: {
-      recordHar: {
-        path: 'tests/hars/ingredients.har'
-      }
-    }
+    baseURL: 'http://localhost:4000'
   },
 
   webServer: {
