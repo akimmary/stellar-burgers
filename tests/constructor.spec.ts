@@ -187,7 +187,7 @@ test.describe('Оформление заказа', () => {
     });
 
     await expect(constructor.getByText('Выберите булки')).toHaveCount(2);
-
+    await expect(page.getByText('Выберите начинку')).toBeVisible();
     // Закрываем модалку
     const closeButton = orderModal.getByRole('button');
 
